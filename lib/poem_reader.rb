@@ -1,64 +1,40 @@
-# read every file in the directory
-# parse the title, author and verses
-# generate hash
+def title(poem)
+  poem.lines.first.chomp
+end
 
-# file =
-#   "In Possum Land
-#   Henry Lawson
-#
-#   In Possum Land the nights are fair,
-#   the streams are fresh and clear;
-#   no dust is in the moonlit air;
-#   no traffic jars the ear.
-#
-#   With Possums gambolling overhead,
-#   'neath western stars so grand,
-#   Ah! would that we could make our bed
-#   tonight in Possum Land"
-#
-# file2 =
-#   "Aboard At A Ship's Helm
-#   Walt Whitman
-#
-#   Aboard, at a ship's helm,
-#   A young steersman, steering with care.
-#
-#   A bell through fog on a sea-coast dolefully ringing,
-#   An ocean-bell--O a warning bell, rock'd by the waves.
-#
-#   O you give good notice indeed, you bell by the sea-reefs ringing,
-#   Ringing, ringing, to warn the ship from its wreck-place.
-#
-#   For, as on the alert, O steersman, you mind the bell's admonition,
-#   The bows turn,--the freighted ship, tacking, speeds away under her gray sails,
-#   The beautiful and noble ship, with all her precious wealth, speeds away gaily and safe.
-#
-#   But O the ship, the immortal ship! O ship aboard the ship!
-#   O ship of the body--ship of the soul--voyaging, voyaging, voyaging."
+def author(poem)
+  array_of_poem_lines = poem.lines
+  array_of_poem_lines[1].strip
+end
 
-# iterate through each file
-  # store these variables
-  # put these variables into the big hash
+def count_verses(poem)
+  poem.lines.count("\n")
+end
 
-# but what about duplicate authors???
-# at the end of creating big hash
-  # find duplicate keys (authors)
-  # store the values of those keys into a variable
-  # add those values to one of the keys (authors)
-  # remove the duplicates. ?? too long?
+def count_lines(poem)
+  title_plus_author_lines = 2
+  extra_lines = count_verses(poem) + title_plus_author_lines
+  poem.lines.count - extra_lines
+end
 
-# file = File.read("data/poem_01.txt")  # having trouble accessing /data
+def poem_to_hash(poem)
+  poem_hash = {}
+  poem_hash.store(title(poem), {verses: count_verses(poem), lines: count_lines(poem)})
+  poem_hash
+end
 
+def all_poems_to_hash(file_path)
+  big_poem_hash = {}
+  Dir.glob(file_path).each do |file|
+    raw_poem = File.read(file)
+    if big_poem_hash.has_key?(author(raw_poem))
+      big_poem_hash[author(raw_poem)].store(title(raw_poem), {verses: count_verses(raw_poem), lines: count_lines(raw_poem)})
+    else
+      big_poem_hash.store(author(raw_poem), poem_to_hash(raw_poem))
+    end
+  end
 
-verses = file.lines.count("\n")
-lines = file.lines.count - 2 - verses
+  big_poem_hash
+end
 
-title = file.lines.first.chomp
-split_poem = file.split("\n")
-author = split_poem[1].strip
-
-poem = {}
-poem.store(title, {verses: verses, lines: lines})
-poem_hash = {}
-poem_hash.store(author, poem)
-p poem_hash
+p all_poems_to_hash("data/*.txt")
